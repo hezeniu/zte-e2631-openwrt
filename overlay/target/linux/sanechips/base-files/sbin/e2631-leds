@@ -62,7 +62,6 @@ blue=$(find_led blue)
 
 upgrading() {
 	[ -e /tmp/.e2631-upgrade ] && return 0
-	pidof e2631-fwslot >/dev/null 2>&1 && return 0
 	pidof sysupgrade >/dev/null 2>&1
 }
 
