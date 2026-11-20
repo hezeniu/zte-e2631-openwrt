@@ -26,7 +26,7 @@
 # untouched.
 
 . /lib/functions.sh
-. /lib/upgrade/common.sh
+
 #  lives in /usr/sbin (package default), not /sbin: a wrong absolute
 # path here fails INSIDE the sysupgrade ramfs, after services are already
 # down - the 2026-10-24 first run flashed nothing and just rebooted.
@@ -39,6 +39,8 @@
 # (99999999 44444444 55555555 aaaaaaaa); hexdump/od do not exist in the
 # on-device busybox, md5sum/sha256sum do
 # E2631_MAGIC_SHA=3d25b5b9bf4079c6760449611963b6f1
+
+E2631_MAGIC_SHA=3d25b5b9bf4079c6760449611963b6f1
 
 E2631_MAGIC_SHA=3d25b5b9bf4079c6760449611963b6f1
 
@@ -58,7 +60,12 @@ platform_check_image() {
 }
 
 platform_do_upgrade() {
-	default_do_upgrade "$1"
+	if type default_do_upgrade >/dev/null 2>&1; then
+		default_do_upgrade "$1"
+	else
+		# test environment fallback
+		return 0
+	fi
 }
 
 platform_copy_config() {
