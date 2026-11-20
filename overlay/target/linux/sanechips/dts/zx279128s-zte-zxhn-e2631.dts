@@ -333,21 +333,76 @@
 
 		/* HYF1GQ4UTACAE: 128 MiB, 2 KiB pages, 128 KiB erase blocks */
 		partitions {
-                compatible = "fixed-partitions";
-                #address-cells = <1>;
-                #size-cells = <1>;
+    		compatible = "fixed-partitions";
+    		#address-cells = <1>;
+    		#size-cells = <1>;
 
-                partition@0 {
-                    label = "u-boot";
-                    reg = <0x000000 0x200000>;
-                    read-only;
-                };
+    		partition@0 {
+        		label = "u-boot";
+        		reg = <0x000000 0x200000>;
+        		read-only;
+    		};
 
-                partition@200000 {
-                    label = "firmware";
-                    reg = <0x200000 0xfe00000>;
-                };
-        };
+    		partition@200000 {
+        		label = "parameter";
+        		reg = <0x200000 0x400000>;
+    		};
+
+    		partition@600000 {
+        		label = "kernel0";
+        		reg = <0x600000 0x2000000>;
+    		};
+
+    		partition@2600000 {
+        		label = "middleware";
+        		reg = <0x2600000 0x400000>;
+    		};
+
+    		partition@2a00000 {
+        		label = "usercfg";
+        		reg = <0x2a00000 0x800000>;
+    		};
+
+    		partition@3200000 {
+        		label = "kernel1";
+        		reg = <0x3200000 0x2000000>;
+    		};
+
+    		partition@5200000 {
+        		label = "others";
+        		reg = <0x5200000 0x600000>;
+    		};
+
+    		partition@5800000 {
+        		label = "wlan";
+        		reg = <0x5800000 0x400000>;
+    		};
+
+    		partition@5c00000 {
+        		label = "phoneapp";
+        		reg = <0x5c00000 0x200000>;
+    		};
+
+    		partition@5e00000 {
+        		label = "osgi";
+        		reg = <0x5e00000 0x1e00000>;
+    		};
+
+    		partition@7c00000 {
+        		label = "plugin_data";
+        		reg = <0x7c00000 0x6400000>;
+    		};
+
+    		partition@e000000 {
+        		label = "osgi1";
+        		reg = <0xe000000 0x1e00000>;
+    		};
+
+    		partition@fe00000 {
+        		label = "phoneapp1";
+        		reg = <0xfe00000 0x200000>;
+    		};
+		};
 	};
 };
 
