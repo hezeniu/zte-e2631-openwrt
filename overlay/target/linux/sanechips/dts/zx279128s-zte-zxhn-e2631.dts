@@ -333,187 +333,21 @@
 
 		/* HYF1GQ4UTACAE: 128 MiB, 2 KiB pages, 128 KiB erase blocks */
 		partitions {
-			/*
-			 * zx279128s-slotpart (v1.4): this table is the SLOT-1
-			 * layout, and cspboot picks the boot slot by version
-			 * header serial - the two systems swap in place. The
-			 * parser reads both slot headers at parse time and, on
-			 * a slot-0 boot, moves rootfs and slot1-header into
-			 * slot 0 (same row count, same labels, so root=
-			 * keeps pointing at the same mtdblock). Every failure
-			 * keeps this table. See
-			 * files/drivers/mtd/parsers/zx279128s-slotpart.c.
-			 */
-			compatible = "zte,zx279128s-slotpart";
-			#address-cells = <1>;
-			#size-cells = <1>;
+                compatible = "fixed-partitions";
+                #address-cells = <1>;
+                #size-cells = <1>;
 
-			/* slot geometry the parser re-derives the boot slot
-			 * from; bases are the two whole-system windows, the
-			 * deltas are inside-slot: rootfs at +0x400000 (forced
-			 * by cspboot's ceil(kSize/erasesize) lookup), the
-			 * version header at +0x1400000.
-			 */
-			zte,slot0 = <0x00700000 0x01c00000>;
-			zte,slot1 = <0x02300000 0x01c00000>;
-			zte,fs-delta = <0x00400000>;
-			zte,hdr-delta = <0x01500000>;
+                partition@0 {
+                    label = "u-boot";
+                    reg = <0x000000 0x200000>;
+                    read-only;
+                };
 
-			partition@0 {
-				label = "bootloader";
-				reg = <0x0000000 0x0100000>;
-				read-only;
-			};
-
-			partition@100000 {
-				label = "tag";
-				reg = <0x0100000 0x0100000>;
-				read-only;
-
-				nvmem-layout {
-					compatible = "fixed-layout";
-					#address-cells = <1>;
-					#size-cells = <1>;
-
-					/* LAN MAC; WAN uses the next one (H3600 convention,
-					 * verify against the vendor web UI before shipping)
-					 */
-					macaddr_tag_1e: macaddr@1e {
-						compatible = "mac-base";
-						reg = <0x1e 0x6>;
-						#nvmem-cell-cells = <1>;
-					};
-				};
-			};
-
-			partition@200000 {
-				label = "wifi";
-				reg = <0x0200000 0x0100000>;
-			};
-
-			partition@300000 {
-				label = "usercfg";
-				reg = <0x0300000 0x0200000>;
-				read-only;
-			};
-
-			partition@500000 {
-				label = "defcfg";
-				reg = <0x0500000 0x0200000>;
-				read-only;
-			};
-
-			/*
-			 * The system lives in two whole-image slots, declared by every
-			 * official upgrade package (header +0x4c/+0x5c) and confirmed by
-			 * /proc/zte/verinfo/versionstates: 0x700000..0x2300000 and
-			 * 0x2300000..0x3f00000, 28 MiB each. Slot 0 keeps the vendor
-			 * system; OpenWrt is installed into slot 1, so that
-			 * "e2631-fwslot switch" can boot the vendor side again without
-			 * rewriting a byte of it.
-			 *
-			 * rootfs and slot1-header are windows into slot1, the same way the
-			 * vendor table overlaps "rootfs" inside "kernel1". They stay flat on
-			 * purpose: mainline ofpart only looks for sub-partitions when the
-			 * partition node itself carries "compatible = fixed-partitions", and
-			 * then their offsets are relative. One flat table keeps every address
-			 * an absolute flash offset, which is also what e2631-fwslot matches
-			 * against /sys/class/mtd/mtdN/offset.
-			 *
-			 * Inside slot 1 our package is laid out as
-			 *   +0x000000  32-byte slot marker
-			 *   +0x000020  kernel (plaintext legacy uImage, load 0x40008000),
-			 *                padded to fill the region up to +0x400000
-			 *   +0x400000  squashfs, then free space up to +0x1500000
-			 *   +0x1500000 the 512-byte version header block
-			 *
-			 * +0x400000 is not a free choice. cspboot locates the rootfs as
-			 * "slot + ceil(declared kernel size / 128k)" and ignores the header's
-			 * own rootfs offset (proved on the serial console: a kernel of
-			 * 0x34bdf8 made it read slot+0x360000, rejected the CRC and fell back
-			 * to slot 0). The packer therefore declares the padded kernel extent
-			 * 0x3fffe0, whose rounded-up value is exactly +0x400000, which is also
-			 * why KERNEL_SIZE is capped at 4096k: a kernel that outgrows this
-			 * region must fail the build, not move the rootfs under the table.
-			 *
-			 * The 17 MiB rootfs window (extended from 16 MiB in v1.9.1 so the
-			 * built-in plugin set - smartdns, nlbwmon, UPnP, WOL, adblock-fast
-			 * and their kernel modules - fits with room to grow) is what the
-			 * web UI costs: with LuCI in the
-			 * image the squashfs is around 8 MiB, and the kernel splits the erase
-			 * blocks behind it off as the writable "rootfs_data" (measured on the
-			 * first boot: "1 squashfs-split partitions found on MTD device
-			 * rootfs"), so the overlay is whatever is left of this window - about
-			 * 8 MiB. There is deliberately no "rootfs_data" partition here:
-			 * declaring one would only add a second partition of that name, which
-			 * fstools silently prefers over the split. The version header block
-			 * has to sit outside the window for the same reason: the header's
-			 * rootfs checksum covers +0x400000..+0x400000+rSize, so the overlay
-			 * must never be in it - with the first image it was, and the very
-			 * first config save made the slot unreadable to the bootloader.
-			 *
-			 * The space behind the header block (+0x1120000 to the end of the
-			 * slot, ~11.6 MiB) is left unpartitioned on purpose: it is reachable
-			 * through "slot1", and the packer pads it, so nothing can write it by
-			 * accident. Making "rootfs" reach it instead would put the version
-			 * header inside the overlay.
-			 *
-			 * Those fixed addresses hold only while no erase block of
-			 * [slot start, +0x1400000) is bad; e2631-fwslot checks that and
-			 * refuses to write when it is not.
-			 */
-			partition@700000 {
-				label = "slot0";
-				/* Deliberately not read-only: switching back to the stock
-				 * firmware rewrites the version header inside this slot, and
-				 * "read-only" masks MTD_WRITEABLE off the partition, which
-				 * would make that impossible. e2631-fwslot refuses to flash
-				 * into slot 0 instead.
-				 */
-				reg = <0x00700000 0x01c00000>;
-			};
-
-			partition@2300000 {
-				label = "slot1";
-				reg = <0x02300000 0x01c00000>;
-			};
-
-			partition@2700000 {
-				/* squashfs at its start, overlay after it: see above */
-				label = "rootfs";
-				reg = <0x02700000 0x01100000>;
-			};
-
-			partition@3800000 {
-				label = "slot1-header";
-				reg = <0x03800000 0x00020000>;
-				read-only;
-			};
-
-			/* Independent 47 MiB NAND data area, behind both image
-			 * slots. Safe by three independent lines of evidence
-			 * (2026-10-24): every official upgrade package from
-			 * V1.0.0.4B4 (2023) through V1.0.0.8B8 (2026) carries
-			 * the same slot table and the stock upgrader only ever
-			 * erases 0x2300000..0x3f00000; the stock kernel's own
-			 * /proc/mtd declares nothing beyond 0x2fc0000; and the
-			 * full programmer dump shows 0x3cc0000..0x72c0000
-			 * erased on this unit (the first used block beyond the
-			 * window is at 0x72c0000). Used as an optional UBI/
-			 * UBIFS extroot for /overlay - the activation gate in
-			 * /etc/init.d/e2631-userdata only lets a volume that
-			 * already carries a UBIFS superblock take over.
-			 */
-			partition@3f00000 {
-				label = "userdata";
-				reg = <0x03f00000 0x02f00000>;
-			};
-
-			/* Vendor plugin area: 0x6e00000..0x7f00000 on this board. Left
-			 * alone; it is AES-128-ECB at rest and only readable through the
-			 * vendor kernel.
-			 */
-		};
+                partition@200000 {
+                    label = "firmware";
+                    reg = <0x200000 0xfe00000>;
+                };
+        };
 	};
 };
 
