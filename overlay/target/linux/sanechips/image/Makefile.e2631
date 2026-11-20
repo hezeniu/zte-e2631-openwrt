@@ -45,8 +45,6 @@ define Device/zte_zxhn-e2631
   # overlay/package/luci/luci-theme-argon since v1.3: same theme, but no
   # GitHub clone at apply time. Bootstrap stays in the list as the fallback.
   DEVICE_PACKAGES := kmod-nft-offload ubi-utils block-mount \
-	zte-mesh luci-app-zte-mesh \
-	luci-app-e2631 \
 	libustream-mbedtls \
 	luci luci-i18n-base-zh-cn luci-proto-ppp luci-app-ttyd ttyd \
 	luci-theme-argon luci-theme-bootstrap
