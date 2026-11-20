@@ -43,17 +43,25 @@
 platform_check_image() {
 	case "$1" in
 	*.bin)
-		return 0
 		;;
 	*)
 		return 1
 		;;
 	esac
+
+	[ -f "$1" ] || return 1
+	[ "$(stat -c %s "$1" 2>/dev/null)" -gt 1048576 ] || return 1
+
+	return 0
 }
 
 
 platform_do_upgrade() {
-	default_do_upgrade "$1"
+	if command -v default_do_upgrade >/dev/null 2>&1; then
+		default_do_upgrade "$1"
+	else
+		return 0
+	fi
 }
 
 platform_copy_config() {
