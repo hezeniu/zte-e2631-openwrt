@@ -51,12 +51,9 @@ platform_check_image() {
 	esac
 }
 
+
 platform_do_upgrade() {
-	if type default_do_upgrade >/dev/null 2>&1; then
-		default_do_upgrade "$1"
-	else
-		return 1
-	fi
+	default_do_upgrade "$1"
 }
 
 platform_copy_config() {
