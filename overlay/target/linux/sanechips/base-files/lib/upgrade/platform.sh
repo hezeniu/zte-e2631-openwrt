@@ -38,7 +38,7 @@
 # sha256 of the 16-byte outer magic every kit-packed package starts with
 # (99999999 44444444 55555555 aaaaaaaa); hexdump/od do not exist in the
 # on-device busybox, md5sum/sha256sum do
-E2631_MAGIC_SHA=3d25b5b9bf4079c6760449611963b6f1
+# E2631_MAGIC_SHA=3d25b5b9bf4079c6760449611963b6f1
 
 platform_check_image() {
 	return 0
