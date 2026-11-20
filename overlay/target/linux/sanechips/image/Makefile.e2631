@@ -27,7 +27,7 @@ define Device/zte_zxhn-e2631
   # rootfs_data, and the header's checksum stops at the squashfs, so that tail
   # is the writable part.
   KERNEL_SIZE := 4096k
-  KERNEL := kernel-bin | append-dtb | uImage none | zte-slot-marker | \
+  KERNEL := kernel-bin | append-dtb | uImage none | \
 	check-size $$(KERNEL_SIZE)
   KERNEL_INITRAMFS := kernel-bin | append-dtb | uImage-ramboot
   # The radio is an MT7916AN + MT7976DN (Filogic 630): the mt7915e driver binds
@@ -44,8 +44,7 @@ define Device/zte_zxhn-e2631
   # Argon (v1.0..v1.2's default theme) is VENDORED at
   # overlay/package/luci/luci-theme-argon since v1.3: same theme, but no
   # GitHub clone at apply time. Bootstrap stays in the list as the fallback.
-  DEVICE_PACKAGES := kmod-mt7915e kmod-mt7916-firmware e2631-fwslot \
-	kmod-nft-offload ubi-utils block-mount \
+  DEVICE_PACKAGES := kmod-nft-offload ubi-utils block-mount \
 	zte-mesh luci-app-zte-mesh \
 	luci-app-e2631 \
 	libustream-mbedtls \
