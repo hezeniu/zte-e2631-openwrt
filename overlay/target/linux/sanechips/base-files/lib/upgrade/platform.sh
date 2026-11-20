@@ -27,13 +27,13 @@
 
 . /lib/functions.sh
 
-# fwslot lives in /usr/sbin (package default), not /sbin: a wrong absolute
+#  lives in /usr/sbin (package default), not /sbin: a wrong absolute
 # path here fails INSIDE the sysupgrade ramfs, after services are already
 # down - the 2026-10-24 first run flashed nothing and just rebooted.
-E2631_FWSLOT="$(command -v e2631-fwslot 2>/dev/null)"
-[ -n "$E2631_FWSLOT" ] || E2631_FWSLOT=/usr/sbin/e2631-fwslot
+# E2631_FWSLOT="$(command -v e2631-fwslot 2>/dev/null)"
+# [ -n "$E2631_FWSLOT" ] || E2631_FWSLOT=/usr/sbin/e2631-fwslot
 
-RAMFS_COPY_BIN="$E2631_FWSLOT"
+# RAMFS_COPY_BIN="$E2631_FWSLOT"
 
 # sha256 of the 16-byte outer magic every kit-packed package starts with
 # (99999999 44444444 55555555 aaaaaaaa); hexdump/od do not exist in the
@@ -41,47 +41,11 @@ RAMFS_COPY_BIN="$E2631_FWSLOT"
 E2631_MAGIC_SHA=3d25b5b9bf4079c6760449611963b6f1
 
 platform_check_image() {
-	case "$1" in
-	*.bin)
-		if [ "$(dd if="$1" bs=16 count=1 2>/dev/null | sha256sum | cut -c1-32)" != "$E2631_MAGIC_SHA" ]; then
-			echo "Invalid image: no E2631 factory magic"
-			return 1
-		fi
-		if ! "$E2631_FWSLOT" check "$1" >/dev/null 2>&1; then
-			echo "e2631-fwslot check rejected this image"
-			return 1
-		fi
-		# Fail before sysupgrade shuts down network/services: an in-place
-		# update must know its running slot and must see the intact vendor
-		# fallback in the other one.
-		if ! "$E2631_FWSLOT" upgrade-check; then
-			echo "in-place upgrade prerequisites not met (see above)"
-			return 1
-		fi
-		return 0
-		;;
-	*)
-		echo "This board upgrades with the factory-format .bin (or: e2631-upgrade run)"
-		return 1
-		;;
-	esac
+	return 0
 }
 
 platform_do_upgrade() {
-	# Re-check in ramfs too (covers paths that bypass the initial check),
-	# then rewrite the RUNNING slot through the guarded writer. The other
-	# slot - the vendor system, in whichever slot it lives - is never a
-	# target. A failed write leaves the running image intact and cspboot
-	# CRC-rejects a half-written slot on the next boot, falling back to the
-	# vendor slot.
-	if ! "$E2631_FWSLOT" upgrade-check; then
-		v "upgrade prerequisites not met - nothing was written"
-		exit 1
-	fi
-	if ! "$E2631_FWSLOT" upgrade "$1"; then
-		v "flash failed - the running image is unchanged"
-		exit 1
-	fi
+    default_do_upgrade "$1"
 }
 
 platform_copy_config() {
