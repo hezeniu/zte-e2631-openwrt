@@ -26,7 +26,7 @@
 # untouched.
 
 . /lib/functions.sh
-
+. /lib/upgrade/common.sh
 #  lives in /usr/sbin (package default), not /sbin: a wrong absolute
 # path here fails INSIDE the sysupgrade ramfs, after services are already
 # down - the 2026-10-24 first run flashed nothing and just rebooted.
@@ -57,17 +57,9 @@ platform_check_image() {
 	esac
 }
 
-
 platform_do_upgrade() {
-	if command -v default_do_upgrade >/dev/null 2>&1; then
-		default_do_upgrade "$1"
-	else
-		dd if="$1" of=/dev/null
-		return 0
-	fi
+	default_do_upgrade "$1"
 }
-
-
 
 platform_copy_config() {
 	true
