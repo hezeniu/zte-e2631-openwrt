@@ -41,11 +41,22 @@
 # E2631_MAGIC_SHA=3d25b5b9bf4079c6760449611963b6f1
 
 platform_check_image() {
-	return 0
+	case "$1" in
+	*.bin)
+		return 0
+		;;
+	*)
+		return 1
+		;;
+	esac
 }
 
 platform_do_upgrade() {
-    default_do_upgrade "$1"
+	if type default_do_upgrade >/dev/null 2>&1; then
+		default_do_upgrade "$1"
+	else
+		return 1
+	fi
 }
 
 platform_copy_config() {
