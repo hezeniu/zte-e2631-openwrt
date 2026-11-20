@@ -52,8 +52,9 @@ define Device/zte_zxhn-e2631
   # template, and those are not redistributed, so it is only built when
   # CONFIG_E2631_VENDOR_TEMPLATE names one. CI leaves it empty and gets
   # sysupgrade.bin; tools/release.mjs packs the factory file locally.
-  IMAGES := $(if $(E2631_VENDOR_TEMPLATE),factory.bin )sysupgrade.bin
-  IMAGE/factory.bin := e2631-factory
+  # IMAGES := $(if $(E2631_VENDOR_TEMPLATE),factory.bin )sysupgrade.bin
+  IMAGES := sysupgrade.bin
+  # IMAGE/factory.bin := e2631-factory
   IMAGE/sysupgrade.bin := sysupgrade-tar | append-metadata
 endef
 TARGET_DEVICES += zte_zxhn-e2631
@@ -63,13 +64,13 @@ TARGET_DEVICES += zte_zxhn-e2631
 # Kernel and rootfs are stored in the clear: on this board the vendor
 # bootloader boots a plaintext uImage and the AES layer only covers the vendor
 # rootfs, inside the vendor kernel's own MTD read path.
-define Build/e2631-factory
-	[ -n "$(E2631_VENDOR_TEMPLATE)" ] || { \
-		echo "CONFIG_E2631_VENDOR_TEMPLATE must name an official E2631 package" >&2; exit 1; }
-	[ -f "$(E2631_VENDOR_TEMPLATE)" ] || { \
-		echo "no such vendor template: $(E2631_VENDOR_TEMPLATE)" >&2; exit 1; }
-	node $(TOPDIR)/tools/e2631-mkfactory.mjs pack \
-		--template $(E2631_VENDOR_TEMPLATE) \
-		--kernel $(IMAGE_KERNEL) --rootfs $(IMAGE_ROOTFS) \
-		--rootfs-at 0x400000 --header-at 0x1400000 --out $@
-endef
+#define Build/e2631-factory
+#	[ -n "$(E2631_VENDOR_TEMPLATE)" ] || { \
+#		echo "CONFIG_E2631_VENDOR_TEMPLATE must name an official E2631 package" >&2; exit 1; }
+#	[ -f "$(E2631_VENDOR_TEMPLATE)" ] || { \
+#		echo "no such vendor template: $(E2631_VENDOR_TEMPLATE)" >&2; exit 1; }
+#	node $(TOPDIR)/tools/e2631-mkfactory.mjs pack \
+#		--template $(E2631_VENDOR_TEMPLATE) \
+#		--kernel $(IMAGE_KERNEL) --rootfs $(IMAGE_ROOTFS) \
+#		--rootfs-at 0x400000 --header-at 0x1400000 --out $@
+#endef
