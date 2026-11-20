@@ -40,19 +40,21 @@
 # on-device busybox, md5sum/sha256sum do
 # E2631_MAGIC_SHA=3d25b5b9bf4079c6760449611963b6f1
 
+E2631_MAGIC_SHA=3d25b5b9bf4079c6760449611963b6f1
+
 platform_check_image() {
 	case "$1" in
 	*.bin)
+		if [ "$(dd if="$1" bs=16 count=1 2>/dev/null | sha256sum | cut -c1-32)" != "$E2631_MAGIC_SHA" ]; then
+			echo "Invalid image: no E2631 factory magic"
+			return 1
+		fi
+		return 0
 		;;
 	*)
 		return 1
 		;;
 	esac
-
-	[ -f "$1" ] || return 1
-	[ "$(stat -c %s "$1" 2>/dev/null)" -gt 1048576 ] || return 1
-
-	return 0
 }
 
 
@@ -60,9 +62,12 @@ platform_do_upgrade() {
 	if command -v default_do_upgrade >/dev/null 2>&1; then
 		default_do_upgrade "$1"
 	else
+		dd if="$1" of=/dev/null
 		return 0
 	fi
 }
+
+
 
 platform_copy_config() {
 	true
