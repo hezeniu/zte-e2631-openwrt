@@ -13,7 +13,7 @@ E2631_VENDOR_TEMPLATE := $(call qstrip,$(CONFIG_E2631_VENDOR_TEMPLATE))
 
 define Device/zte_zxhn-e2631
   DEVICE_VENDOR := ZTE
-  DEVICE_MODEL := ZXHN E2631
+  DEVICE_MODEL := DT741
   DEVICE_DTS := zx279128s-zte-zxhn-e2631
   DEVICE_DTS_DIR := $(TOPDIR)/target/linux/sanechips/dts
   # The package pads the kernel region so the rootfs starts at slot +0x400000
