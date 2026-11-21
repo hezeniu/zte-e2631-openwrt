@@ -8,7 +8,7 @@ define Device/zte_zxhn-e2631
   DEVICE_DTS := zx279128s-zte-zxhn-e2631
   DEVICE_DTS_DIR := $(TOPDIR)/target/linux/sanechips/dts
   KERNEL_SIZE := 32768k
-  KERNEL := kernel-bin | append-dtb | uImage none | \
+  KERNEL := kernel-bin | append-dtb | uImage none | zte-slot-marker | \
 	check-size $$(KERNEL_SIZE)
   KERNEL_INITRAMFS := kernel-bin | append-dtb | uImage-ramboot
   DEVICE_PACKAGES := kmod-nft-offload ubi-utils block-mount \
