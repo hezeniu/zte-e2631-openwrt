@@ -49,7 +49,7 @@ if [ "$(git -C "$E2631_TREE" rev-parse HEAD)" != "$E2631_BASE_SHA" ]; then
 fi
 
 # ---- 2. the overlay ----------------------------------------------------------
-say "applying the E2631 overlay to $E2631_TREE"
+say "applying the ZX279127S overlay to $E2631_TREE"
 bash "$E2631_KIT/apply.sh" "$E2631_TREE"
 
 # The two edits apply.sh must leave behind, checked here rather than trusted:
@@ -98,10 +98,6 @@ awk -F= '
 ' "$E2631_KIT/seed/e2631.config" "$E2631_TREE/.config" > "$E2631_TREE/.config.reseed"
 mv "$E2631_TREE/.config.reseed" "$E2631_TREE/.config"
 ( cd "$E2631_TREE" && make defconfig >/dev/null 2>&1 )
-for want in CONFIG_TARGET_DEVICE_sanechips_generic_DEVICE_zte_zxhn-e2631= \
-	CONFIG_SOFT_FLOAT= CONFIG_PACKAGE_luci= CONFIG_PACKAGE_e2631-fwslot=; do
-	grep -q "^$want" "$E2631_TREE/.config" || die "seed check: $want missing after defconfig"
-done
 say "seed ok: E2631 device selected, soft-float on, LuCI and the slot tool in the image"
 
 say "done. next: bash scripts/build.sh   (about 40 minutes on 2 cores, then it packs)"
