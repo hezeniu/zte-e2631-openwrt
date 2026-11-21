@@ -234,7 +234,7 @@ table.forEach((t, i) => console.log(`    mtd${i}  ${t.label.padEnd(14)} ${hx(t.a
 
 const idxOf = (label) => table.findIndex((t) => t.label === label);
 
-const BLOCK = 0x20000, SLOT1 = 0x2300000, SPAN = 0x1c00000;
+const BLOCK = 0x20000, SLOT_BASE = 0x2300000, SPAN = 0x1c00000;
 const KERNEL_AT = 0x400000, ROOTFS_SPAN = 0x1100000, HEADER_AT = KERNEL_AT + ROOTFS_SPAN;
 
 const iRoot = idxOf('rootfs');
@@ -248,7 +248,7 @@ ok(`the kernel plus its 32-byte slot marker fits the ${hx(KERNEL_AT)} region`,
   MARKER.length + u.length <= KERNEL_AT, `kernel=0x${(MARKER.length + u.length).toString(16)} free=0x${(KERNEL_AT - MARKER.length - u.length).toString(16)}`);
 ok(`rootfs starts at expected kernel offset +${hx(KERNEL_AT)}`,
   iRoot >= 0 &&
-  table[iRoot].addr === SLOT1 + KERNEL_AT &&
+  table[iRoot].addr === SLOT_BASE + KERNEL_AT &&
   table[iRoot].size === ROOTFS_SPAN,
   iRoot >= 0 ? `${hx(table[iRoot].addr)} + ${hx(table[iRoot].size)}` : '-');
 
@@ -256,7 +256,7 @@ const sqBlocks = Math.ceil(sq.length / BLOCK) * BLOCK;
 ok('the squashfs leaves writable space inside its partition', sqBlocks + BLOCK <= ROOTFS_SPAN,
   `squashfs ${hx(sq.length)} -> split at +${hx(KERNEL_AT + sqBlocks)}, partition ends at +${hx(KERNEL_AT + ROOTFS_SPAN)}: overlay ${hx(ROOTFS_SPAN - sqBlocks)} = ${((ROOTFS_SPAN - sqBlocks) / 1048576).toFixed(2)} MiB`);
 const iHeader = table.findIndex((t) =>
-  t.addr === SLOT1 + HEADER_AT && t.size === BLOCK);
+  t.addr === SLOT_BASE + HEADER_AT && t.size === BLOCK);
 
 ok('the version header block sits right after the rootfs, out of the overlay',
   iHeader >= 0,
@@ -265,9 +265,6 @@ ok('the version header block sits right after the rootfs, out of the overlay',
 ok('the version header block is read-only',
   iHeader >= 0 && !!table[iHeader].node.props['read-only'],
   iHeader >= 0 ? 'read-only present' : 'missing');
-ok('the version header block is read-only (the overlay must never reach it)', iHdr >= 0 &&
-  !!table[iHdr].node.props['read-only'], iHdr >= 0 ? (table[iHdr].node.props['read-only'] ? 'read-only present' : 'MISSING') : 'missing');
-
 
 const cmdline = (kv('CMDLINE') || '').replace(/\\\"/g, '"');
 okC('CONFIG_CMDLINE_FORCE is on', kv('CMDLINE_FORCE') === 'y', 'the vendor bootargs would win otherwise');
