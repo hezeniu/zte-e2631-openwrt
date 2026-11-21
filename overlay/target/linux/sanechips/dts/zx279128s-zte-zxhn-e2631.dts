@@ -157,8 +157,6 @@
 	label = "lan3";
 	phy-handle = <&phy10>;
 	phy-mode = "internal";
-	nvmem-cells = <&macaddr_tag_1e 0>;
-	nvmem-cell-names = "mac-address";
 	status = "okay";
 };
 
@@ -166,8 +164,6 @@
 	label = "lan2";
 	phy-handle = <&phy11>;
 	phy-mode = "internal";
-	nvmem-cells = <&macaddr_tag_1e 0>;
-	nvmem-cell-names = "mac-address";
 	status = "okay";
 };
 
@@ -175,8 +171,6 @@
 	label = "lan1";
 	phy-handle = <&phy12>;
 	phy-mode = "internal";
-	nvmem-cells = <&macaddr_tag_1e 0>;
-	nvmem-cell-names = "mac-address";
 	status = "okay";
 };
 
@@ -184,8 +178,6 @@
 	label = "wan";
 	phy-handle = <&phy13>;
 	phy-mode = "internal";
-	nvmem-cells = <&macaddr_tag_1e 1>;
-	nvmem-cell-names = "mac-address";
 	status = "okay";
 };
 
