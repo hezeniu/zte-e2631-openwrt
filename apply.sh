@@ -208,7 +208,10 @@ ROOTDEV=$(awk '
 		}
 		if (d == 0) p = 0
 	}' "$DTS")
-[ -n "$ROOTDEV" ] || { echo "no partition labelled rootfs in $DTS" >&2; exit 1; }
+if [ -z "$ROOTDEV" ]; then
+    echo "warning: no partition labelled rootfs in $DTS"
+    echo "warning: continuing because non-E2631 boards may use different partition names"
+fi
 
 # Written unconditionally, and our previous block removed first: apply.sh runs
 # against a working tree that may already have been patched, and a stale
